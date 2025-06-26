@@ -7,12 +7,16 @@ import androidx.navigation.compose.composable
 import com.weatherapp.ui.HomePage
 import com.weatherapp.ui.ListPage
 import com.weatherapp.ui.MapPage
+import com.weatherapp.viewModel.MainViewModel
 
 @Composable
-fun MainNavHost(navController: NavHostController) {
+fun MainNavHost(
+    navController: NavHostController,
+    viewModel: MainViewModel
+) {
     NavHost(navController, startDestination = Route.Home) {
-        composable<Route.Home> { HomePage() }
-        composable<Route.List> { ListPage() }
-        composable<Route.Map> { MapPage() }
+        composable<Route.Home> { HomePage(viewModel) }
+        composable<Route.List> { ListPage(viewModel = viewModel) }
+        composable<Route.Map> { MapPage(viewModel) }
     }
 }
