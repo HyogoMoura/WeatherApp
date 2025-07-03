@@ -1,5 +1,6 @@
 package com.weatherapp
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,6 +35,15 @@ import com.weatherapp.ui.nav.BottomNavItem
 import com.weatherapp.ui.nav.MainNavHost
 import com.weatherapp.ui.theme.WeatherAppTheme
 import com.weatherapp.viewModel.MainViewModel
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.weatherapp.ui.nav.Route
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.navigation.compose.currentBackStackEntryAsState
+
+
+
+
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +54,11 @@ class MainActivity : ComponentActivity() {
             var showDialog by remember { mutableStateOf(false) }
             val viewModel : MainViewModel by viewModels()
             val navController = rememberNavController()
+
+            val currentRoute = navController.currentBackStackEntryAsState()
+            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) == true
+            val launcher = rememberLauncherForActivityResult(contract =
+                ActivityResultContracts.RequestPermission(), onResult = {} )
 
             WeatherAppTheme {
                 if (showDialog) CityDialog(
@@ -76,16 +91,29 @@ class MainActivity : ComponentActivity() {
                         BottomNavBar(navController = navController, items)
                     },
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { showDialog = true }) {
-                            Icon(Icons.Default.Add, contentDescription = "Adicionar")
+                        if (showButton) {
+                            FloatingActionButton(onClick = { showDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = "Adicionar")
+                            }
                         }
                     }
-                ) { innerPadding ->
+
+                )  { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        MainNavHost(navController = navController, viewModel = viewModel)
+                        launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        MainNavHost(navController = navController, viewModel)
                     }
                 }
             }
         }
     }
 }
+
+
+//@Preview(showBackground = true)
+//@Composable
+//fun HomePagePreview() {
+//    WeatherAppTheme {
+//        HomePage()
+//    }
+//}
