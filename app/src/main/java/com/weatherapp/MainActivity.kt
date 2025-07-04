@@ -40,9 +40,8 @@ import com.weatherapp.ui.nav.Route
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.compose.currentBackStackEntryAsState
-
-
-
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 
 class MainActivity : ComponentActivity() {
@@ -72,7 +71,11 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = { Text("Bem-vindo/a!") },
                             actions = {
-                                IconButton( onClick = { finish() } ) {
+                                IconButton(
+                                    onClick = {
+                                        Firebase.auth.signOut()
+                                        finish()
+                                    } ) {
                                     Icon(
                                         imageVector =
                                             Icons.AutoMirrored.Filled.ExitToApp,
@@ -108,12 +111,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun HomePagePreview() {
-//    WeatherAppTheme {
-//        HomePage()
-//    }
-//}

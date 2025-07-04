@@ -1,5 +1,6 @@
 package com.weatherapp
 
+import android.R.attr.enabled
 import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
@@ -30,6 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.weatherapp.ui.theme.WeatherAppTheme
 
 class RegisterActivity : ComponentActivity() {
@@ -112,10 +115,22 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             Button(
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    Toast.makeText(context, "Registro efetuado com sucesso!", Toast.LENGTH_SHORT).show()
-                    activity?.finish()
-                },
-                enabled = isButtonEnabled
+                    Firebase.auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(activity!!) { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(
+                                    activity,
+                                    "Registro OK!", Toast.LENGTH_LONG
+                                ).show()
+                                activity.finish()
+                            } else {
+                                Toast.makeText(
+                                    activity,
+                                    "Registro FALHOU!", Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                }
             ) {
                 Text("Registrar")
             }
