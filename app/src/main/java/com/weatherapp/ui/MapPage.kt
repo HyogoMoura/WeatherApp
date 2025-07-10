@@ -34,7 +34,7 @@ fun MapPage(viewModel: MainViewModel) {
 
     val recife = LatLng(-8.05, -34.9)
     val caruaru = LatLng(-8.27, -35.98)
-    val joaopessoa = LatLng(-7.12, -34.84)
+    val albertina = LatLng(-9.12, -40.84)
     val camPosState = rememberCameraPositionState()
     val context = LocalContext.current
     val hasLocationPermission by remember {
@@ -76,9 +76,9 @@ fun MapPage(viewModel: MainViewModel) {
             )
         )
         Marker(
-            state = MarkerState(position = joaopessoa),
-            title = "joaopessoa",
-            snippet = "Marcador em João Pessoa",
+            state = MarkerState(position = albertina),
+            title = "albertina",
+            snippet = "prefeitura em albertina",
             icon = BitmapDescriptorFactory.defaultMarker(
                 BitmapDescriptorFactory.HUE_ROSE
             )
