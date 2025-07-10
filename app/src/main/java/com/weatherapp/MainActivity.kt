@@ -42,6 +42,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.weatherapp.model.User.User
 
 
 class MainActivity : ComponentActivity() {
@@ -69,7 +70,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Bem-vindo/a!") },
+                            title = {
+                                val name = viewModel.user?.name?:"[não logado]"
+                                Text("Bem-vindo/a! $name")
+                            },
                             actions = {
                                 IconButton(
                                     onClick = {
