@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +35,7 @@ fun MapPage(viewModel: MainViewModel) {
 
     val recife = LatLng(-8.05, -34.9)
     val caruaru = LatLng(-8.27, -35.98)
-    val albertina = LatLng(-9.12, -40.84)
+    val joaopessoa = LatLng(-7.12, -34.84)
     val camPosState = rememberCameraPositionState()
     val context = LocalContext.current
     val hasLocationPermission by remember {
@@ -55,8 +56,14 @@ fun MapPage(viewModel: MainViewModel) {
     ) {
         viewModel.cities.forEach {
             if (it.location != null) {
+                LaunchedEffect(it.name) {
+                    if (it.weather == null) {
+                        viewModel.loadWeather(it.name)
+                    }
+                }
                 Marker( state = MarkerState(position = it.location),
-                    title = it.name, snippet = "${it.location}")
+                    title = it.name,
+                    snippet = it.weather?.desc?:"Carregando...")
             }
         }
 //        Marker(
@@ -76,9 +83,9 @@ fun MapPage(viewModel: MainViewModel) {
 //            )
 //        )
 //        Marker(
-//            state = MarkerState(position = albertina),
-//            title = "albertina",
-//            snippet = "prefeitura em albertina",
+//            state = MarkerState(position = joaopessoa),
+//            title = "joaopessoa",
+//            snippet = "Marcador em João Pessoa",
 //            icon = BitmapDescriptorFactory.defaultMarker(
 //                BitmapDescriptorFactory.HUE_ROSE
 //            )
