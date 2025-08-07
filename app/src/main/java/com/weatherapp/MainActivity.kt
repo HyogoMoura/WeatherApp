@@ -42,6 +42,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.model.User.User
 import com.weatherapp.viewModel.MainViewModelFactory
@@ -54,8 +55,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val fbDB = remember { FBDatabase() }
+            val weatherService = remember { WeatherService() }
             val viewModel : MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB)
+                factory = MainViewModelFactory(fbDB, weatherService)
             )
             var showDialog by remember { mutableStateOf(false) }
             //val viewModel : MainViewModel by viewModels()

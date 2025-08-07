@@ -46,7 +46,7 @@ fun MapPage(viewModel: MainViewModel) {
     }
     GoogleMap(
         onMapClick = {
-            viewModel.add("Cidade@${it.latitude}:${it.longitude}", location = it)
+            viewModel.add( location = it)
         },
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
@@ -59,29 +59,29 @@ fun MapPage(viewModel: MainViewModel) {
                     title = it.name, snippet = "${it.location}")
             }
         }
-        Marker(
-            state = MarkerState(position = recife),
-            title = "Recife",
-            snippet = "Marcador em Recife",
-            icon = BitmapDescriptorFactory.defaultMarker(
-                BitmapDescriptorFactory.HUE_BLUE
-            )
-        )
-        Marker(
-            state = MarkerState(position = caruaru),
-            title = "caruaru",
-            snippet = "Marcador em Caruaru",
-            icon = BitmapDescriptorFactory.defaultMarker(
-                BitmapDescriptorFactory.HUE_RED
-            )
-        )
-        Marker(
-            state = MarkerState(position = albertina),
-            title = "albertina",
-            snippet = "prefeitura em albertina",
-            icon = BitmapDescriptorFactory.defaultMarker(
-                BitmapDescriptorFactory.HUE_ROSE
-            )
-        )
+//        Marker(
+//            state = MarkerState(position = recife),
+//            title = "Recife",
+//            snippet = "Marcador em Recife",
+//            icon = BitmapDescriptorFactory.defaultMarker(
+//                BitmapDescriptorFactory.HUE_BLUE
+//            )
+//        )
+//        Marker(
+//            state = MarkerState(position = caruaru),
+//            title = "caruaru",
+//            snippet = "Marcador em Caruaru",
+//            icon = BitmapDescriptorFactory.defaultMarker(
+//                BitmapDescriptorFactory.HUE_RED
+//            )
+//        )
+//        Marker(
+//            state = MarkerState(position = albertina),
+//            title = "albertina",
+//            snippet = "prefeitura em albertina",
+//            icon = BitmapDescriptorFactory.defaultMarker(
+//                BitmapDescriptorFactory.HUE_ROSE
+//            )
+//        )
     }
 }
