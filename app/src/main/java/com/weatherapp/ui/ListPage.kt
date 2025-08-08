@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.weatherapp.model.City
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.LaunchedEffect
+import com.weatherapp.ui.nav.Route
 import com.weatherapp.viewModel.MainViewModel
 
 
@@ -57,6 +58,7 @@ fun ListPage(
 
             CityItem(city = city, onClick= {
                 viewModel.city = city
+                viewModel.page = Route.Home
             } , onClose = {
                 viewModel.remove(city)
             })
