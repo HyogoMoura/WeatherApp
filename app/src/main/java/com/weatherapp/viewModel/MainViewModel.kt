@@ -9,6 +9,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
+import com.weatherapp.api.toForecast
 import com.weatherapp.db.fb.FBCity
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.db.fb.FBUser
@@ -25,6 +26,11 @@ class MainViewModel (private val db: FBDatabase,
     val user : User?
         get() = _user.value
 
+    private var _city = mutableStateOf<City?>(null)
+    var city: City?
+        get() = _city.value
+        set(tmp) { _city.value = tmp?.copy() }
+
     fun add(name: String) {
         service.getLocation(name) { lat, lng ->
             if (lat != null && lng != null) {
@@ -37,6 +43,14 @@ class MainViewModel (private val db: FBDatabase,
             if (name != null) {
                 db.add(City(name = name, location = location).toFBCity())
             }
+        }
+    }
+    fun loadForecast(name: String) {
+        service.getForecast(name) { apiForecast ->
+            val newCity = _cities[name]!!.copy( forecast = apiForecast?.toForecast()  )
+            _cities.remove(name)
+            _cities[name] = newCity
+            city = if (city?.name == name) newCity else city
         }
     }
 
@@ -62,9 +76,11 @@ class MainViewModel (private val db: FBDatabase,
     override fun onCityUpdated(city: FBCity) {
         _cities.remove(city.name)
         _cities[city.name!!] = city.toCity()
+        if (_city.value?.name == city.name) { _city.value = city.toCity() }
     }
     override fun onCityRemoved(city: FBCity) {
         _cities.remove(city.name)
+        if (_city.value?.name == city.name) { _city.value = null  }
     }
 
     fun loadWeather(name: String) {

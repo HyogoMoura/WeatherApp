@@ -55,16 +55,11 @@ fun ListPage(
                 }
             }
 
-            CityItem(city = city, onClose = {
+            CityItem(city = city, onClick= {
+                viewModel.city = city
+            } , onClose = {
                 viewModel.remove(city)
-            },
-                onClick = {
-                    android.widget.Toast.makeText(
-                        activity,
-                        "Clicou em ${city.name}",
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
-                })
+            })
         }
     }
 }
