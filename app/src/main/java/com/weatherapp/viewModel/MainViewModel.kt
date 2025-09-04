@@ -23,6 +23,7 @@ class MainViewModel (private val db: FBDatabase,
     private val _cities = mutableStateMapOf<String, City>()
     val cities : List<City>
         get() = _cities.values.toList()
+
     private val _user = mutableStateOf<User?> (null)
     val user : User?
         get() = _user.value
@@ -51,14 +52,6 @@ class MainViewModel (private val db: FBDatabase,
             }
         }
     }
-    fun loadForecast(name: String) {
-        service.getForecast(name) { apiForecast ->
-            val newCity = _cities[name]!!.copy( forecast = apiForecast?.toForecast()  )
-            _cities.remove(name)
-            _cities[name] = newCity
-            city = if (city?.name == name) newCity else city
-        }
-    }
 
     init {
         db.setListener(this)
@@ -69,7 +62,6 @@ class MainViewModel (private val db: FBDatabase,
     fun add(name: String, location : LatLng? = null) {
         db.add(City(name = name, location = location).toFBCity())
     }
-
     override fun onUserLoaded(user: FBUser) {
         _user.value = user.toUser()
     }
@@ -80,20 +72,35 @@ class MainViewModel (private val db: FBDatabase,
         _cities[city.name!!] = city.toCity()
     }
     override fun onCityUpdated(city: FBCity) {
+        val oldCity = _cities[city.name]
         _cities.remove(city.name)
-        _cities[city.name!!] = city.toCity()
-        if (_city.value?.name == city.name) { _city.value = city.toCity() }
+        _cities[city.name!!] = city.toCity().copy(
+            weather = oldCity?.weather,
+            forecast = oldCity?.forecast
+        )
+        if (_city.value?.name == city.name) {
+            _city.value = _cities[city.name]
+        }
     }
     override fun onCityRemoved(city: FBCity) {
         _cities.remove(city.name)
-        if (_city.value?.name == city.name) { _city.value = null  }
+        if (_city.value?.name == city.name) { _city.value = null }
     }
 
     fun loadWeather(name: String) {
         service.getWeather(name) { apiWeather ->
-            val newCity = _cities[name]!!.copy(weather = apiWeather?.toWeather())
+            val newCity = _cities[name]!!.copy( weather = apiWeather?.toWeather() )
             _cities.remove(name)
             _cities[name] = newCity
+        }
+    }
+
+    fun loadForecast(name: String) {
+        service.getForecast(name) { apiForecast ->
+            val newCity = _cities[name]!!.copy( forecast = apiForecast?.toForecast() )
+            _cities.remove(name)
+            _cities[name] = newCity
+            city = if (city?.name == name) newCity else city
         }
     }
 
@@ -109,9 +116,14 @@ class MainViewModel (private val db: FBDatabase,
             _cities[name] = newCity
         }
     }
+
+    fun update(city: City) {
+        db.update(city = city.toFBCity())
+    }
 }
 
-class MainViewModelFactory(private val db : FBDatabase, private val service : WeatherService) :
+class MainViewModelFactory(private val db : FBDatabase,
+                           private val service : WeatherService) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {

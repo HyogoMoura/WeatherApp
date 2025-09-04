@@ -1,6 +1,8 @@
 package com.weatherapp.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.weatherapp.model.City
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
@@ -40,11 +44,9 @@ import com.weatherapp.ui.nav.Route
 import com.weatherapp.viewModel.MainViewModel
 
 
+@SuppressLint("ContextCastToActivity")
 @Composable
-fun ListPage(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel
-) {
+fun ListPage(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val cityList = viewModel.cities
     val activity = LocalContext.current as? Activity
     LazyColumn(
@@ -58,12 +60,12 @@ fun ListPage(
                     viewModel.loadWeather(city.name)
                 }
             }
-
-            CityItem(city = city, onClick= {
+            CityItem(viewModel, city = city, onClose = {
+                viewModel.remove(city)
+                Toast.makeText(activity, "remove city ${city.name}", Toast.LENGTH_SHORT).show()
+            }, onClick = {
                 viewModel.city = city
                 viewModel.page = Route.Home
-            } , onClose = {
-                viewModel.remove(city)
             })
         }
     }
@@ -71,13 +73,17 @@ fun ListPage(
 
 @Composable
 fun CityItem(
+    viewModel: MainViewModel,
     city: City,
     onClick: () -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(8.dp).clickable { onClick() },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -88,12 +94,34 @@ fun CityItem(
         )
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = modifier.weight(1f)) {
-            Text(modifier = Modifier,
-                text = city.name,
-                fontSize = 24.sp)
-            Text(modifier = Modifier,
-                text = city.weather?.desc?:"carregando...",
-                fontSize = 16.sp)
+            Row {
+                Text(
+                    modifier = Modifier,
+                    text = city.name,
+                    fontSize = 24.sp
+                )
+                Icon(
+                    imageVector = if (viewModel.city?.isMonitored == true)
+                        Icons.Filled.Notifications
+                    else
+                        Icons.Outlined.Notifications,
+                    contentDescription = "Monitorada?",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable(enabled = viewModel.city != null) {
+                            viewModel.update(
+                                viewModel.city!!.copy(
+                                    isMonitored = !viewModel.city!!.isMonitored
+                                )
+                            )
+                        }
+                )
+            }
+            Text(
+                modifier = Modifier,
+                text = city.weather?.desc ?: "carregando...",
+                fontSize = 16.sp
+            )
         }
         IconButton(onClick = onClose) {
             Icon(Icons.Filled.Close, contentDescription = "Close")
