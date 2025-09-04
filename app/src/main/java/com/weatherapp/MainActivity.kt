@@ -1,6 +1,9 @@
 package com.weatherapp
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
+import androidx.core.util.Consumer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +42,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import com.weatherapp.ui.nav.Route
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.auth.ktx.auth
@@ -46,28 +50,40 @@ import com.google.firebase.ktx.Firebase
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.model.User.User
+import com.weatherapp.monitor.ForecastMonitor
 import com.weatherapp.viewModel.MainViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("RestrictedApi")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var showDialog by remember { mutableStateOf(false) }
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService() }
+            val monitor = remember { ForecastMonitor(this.applicationContext) }
             val viewModel : MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService)
+                factory = MainViewModelFactory(fbDB, weatherService, monitor)
             )
-            var showDialog by remember { mutableStateOf(false) }
-            //val viewModel : MainViewModel by viewModels()
+            DisposableEffect (Unit) {
+                val listener = Consumer<Intent> { intent ->
+                    val name = intent.getStringExtra("city")
+                    val city = viewModel.cities.find { it.name == name }
+                    viewModel.city = city
+                    viewModel.page = Route.Home
+                }
+                addOnNewIntentListener(listener)
+                onDispose { removeOnNewIntentListener(listener) }
+            }
+            // state hoisting
             val navController = rememberNavController()
-
             val currentRoute = navController.currentBackStackEntryAsState()
             val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) == true
             val launcher = rememberLauncherForActivityResult(contract =
-                ActivityResultContracts.RequestPermission(), onResult = {} )
+                ActivityResultContracts.RequestPermission(), onResult = {})
 
             WeatherAppTheme {
                 if (showDialog) CityDialog(
@@ -80,14 +96,14 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                val name = viewModel.user?.name?:"[não logado]"
+                                val name = viewModel.user?.name ?: "[não logado]"
                                 Text("Bem-vindo/a! $name")
                             },
                             actions = {
-                                IconButton(
-                                    onClick = {
-                                        Firebase.auth.signOut()
-                                    } ) {
+                                IconButton(onClick = {
+                                    Firebase.auth.signOut()
+                                    // finish() // removed on 5th practice
+                                }) {
                                     Icon(
                                         imageVector =
                                             Icons.AutoMirrored.Filled.ExitToApp,
@@ -112,15 +128,13 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-
-                )  { innerPadding ->
+                ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
                         launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         MainNavHost(navController = navController, viewModel)
                     }
-                    LaunchedEffect(viewModel.page) {
+                    LaunchedEffect (viewModel.page) {
                         navController.navigate(viewModel.page) {
-                            // Volta pilha de navegação até HomePage (startDest).
                             navController.graph.startDestinationRoute?.let {
                                 popUpTo(it) {
                                     saveState = true

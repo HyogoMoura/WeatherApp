@@ -101,7 +101,7 @@ fun CityItem(
                     fontSize = 24.sp
                 )
                 Icon(
-                    imageVector = if (viewModel.city?.isMonitored == true)
+                    imageVector = if (city.isMonitored)
                         Icons.Filled.Notifications
                     else
                         Icons.Outlined.Notifications,
